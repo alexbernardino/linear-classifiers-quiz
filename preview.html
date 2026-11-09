@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f1e8">
+    <meta name="description" content="An 18-question quiz on linear decision boundaries, LDA, indicator regression, logistic regression, maximum likelihood and softmax.">
+    <title>Linear classifiers concept check · Machine Learning</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23172139%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2246%22%20text-anchor%3D%22middle%22%20fill%3D%22%23d8f154%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2244%22%20font-weight%3D%22700%22%3EL%3C%2Ftext%3E%3C%2Fsvg%3E%0A%0A" type="image/svg+xml">
+    <style>
+:root {
+  --ink: #172139;
+  --blue: #315fc7;
+  --green: #178464;
+  --red: #cf4d45;
+  --lime: #d8f154;
+  --paper: #fffdf8;
+  --ground: #f4f1e8;
+  --line: #d7d0c2;
+  --muted: #697183;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--ground); color: var(--ink); font-family: Arial, sans-serif; }
+button, a { font: inherit; }
+button:focus-visible, a:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+.quiz-shell { min-height: 100vh; display: flex; flex-direction: column; }
+#quiz-root { flex: 1; }
+.eyebrow { margin: 0 0 4px; color: var(--blue); font: 750 11px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .09em; text-transform: uppercase; }
+
+.site-header { min-height: 76px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; padding: 12px clamp(18px, 4vw, 58px); border-bottom: 1px solid var(--line); background: rgba(255, 253, 248, .94); }
+.brand-mark { width: 44px; height: 50px; display: grid; place-items: center; clip-path: polygon(0 0, 100% 0, 100% 72%, 50% 100%, 0 72%); background: #3b93cf; color: white; font: 800 25px Arial, sans-serif; }
+.site-header h1 { margin: 0; font-size: 21px; letter-spacing: -.025em; }
+.header-note { color: var(--muted); font: 700 11px ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; letter-spacing: .05em; }
+
+.quiz-layout { width: min(1180px, calc(100% - 32px)); margin: 34px auto; display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 34px; }
+.lesson-rail { min-height: 630px; display: flex; flex-direction: column; padding: 30px 26px; border-radius: 18px; background: var(--ink); color: white; }
+.lesson-rail .eyebrow { color: var(--lime); }
+.lesson-rail h2 { margin: 10px 0 34px; font-size: 28px; line-height: 1.08; letter-spacing: -.035em; }
+.lesson-rail ol { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
+.lesson-rail li { display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: 8px; padding: 13px 11px; border-left: 2px solid transparent; color: #aeb7c9; font-size: 13px; }
+.lesson-rail li span { font: 700 10px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.lesson-rail li.active { border-color: var(--lime); background: rgba(255, 255, 255, .08); color: white; }
+.rail-note { margin-top: auto; padding-top: 18px; border-top: 1px solid #39445e; color: #d6dbe5; }
+.rail-note p { margin: 0; font-size: 12px; line-height: 1.55; }
+
+.question-stage { min-width: 0; }
+.setup-note { margin: 0 0 16px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.progress-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px; margin: 4px 0 17px; color: var(--muted); font: 700 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.progress-track { height: 6px; overflow: hidden; border-radius: 99px; background: #ded8cb; }
+.progress-track div { height: 100%; border-radius: inherit; background: var(--blue); transition: width .25s; }
+.progress-row strong { color: var(--ink); }
+.question-card { padding: clamp(24px, 3.2vw, 40px); border: 1px solid var(--line); border-radius: 18px; background: var(--paper); box-shadow: 0 18px 45px rgba(36, 42, 56, .08); }
+.question-top { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 28px; align-items: start; }
+.question-label { margin: 0; color: var(--blue); font: 750 11px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .05em; text-transform: uppercase; }
+.question-card h2 { max-width: 690px; margin: 18px 0 26px; font-size: clamp(24px, 2.35vw, 30px); line-height: 1.12; letter-spacing: -.035em; overflow-wrap: anywhere; }
+.question-card h2:focus { outline: none; }
+.mini-visual { width: 100%; height: auto; border: 1px solid #dfd8ca; border-radius: 12px; }
+.mini-visual text { fill: var(--ink); font: 700 10px Arial, sans-serif; }
+.mini-visual .visual-caption { font-size: 8px; }
+
+.answers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.answers button { width: 100%; display: grid; grid-template-columns: 32px 1fr; align-items: center; gap: 12px; min-height: 63px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: white; color: var(--ink); text-align: left; cursor: pointer; transition: border-color .16s, transform .16s, background .16s; overflow-wrap: anywhere; }
+.answers button:hover:not(:disabled) { border-color: #8ca6df; transform: translateY(-1px); }
+.answers button:disabled { opacity: 1; cursor: default; }
+.answers button > .answer-mark { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: #ece8de; font: 800 12px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.answers button.answer-correct { border-color: #61aa92; background: #e5f3ed; }
+.answers button.answer-correct > .answer-mark { background: var(--green); color: white; }
+.answers button.answer-wrong { border-color: #da837d; background: #f9e9e6; }
+.answers button.answer-wrong > .answer-mark { background: var(--red); color: white; }
+
+.feedback { margin-top: 18px; padding: 16px; border-radius: 10px; }
+.feedback:focus { outline: 2px solid currentColor; outline-offset: 2px; }
+.feedback.correct { background: #e3f3ed; color: #116d51; }
+.feedback.incorrect { background: #f8e8e5; color: #a83e37; }
+.feedback strong { font-size: 14px; }
+.feedback p { margin: 4px 0 10px; color: var(--ink); font-size: 13px; line-height: 1.5; }
+.try-it { padding-top: 9px; border-top: 1px solid rgba(23, 33, 57, .14); color: var(--ink); font-size: 12px; line-height: 1.45; }
+.card-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+button.primary, button.secondary { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 42px; padding: 0 16px; border-radius: 8px; font-weight: 750; font-size: 13px; cursor: pointer; }
+button.primary { border: 1px solid var(--blue); background: var(--blue); color: white; }
+button.secondary { border: 1px solid var(--line); background: transparent; color: var(--ink); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+
+.results { width: min(720px, calc(100% - 32px)); margin: 64px auto; padding: 46px; text-align: center; border: 1px solid var(--line); border-radius: 20px; background: var(--paper); box-shadow: 0 18px 45px rgba(36, 42, 56, .08); }
+.score-ring { width: 150px; height: 150px; display: grid; place-items: center; margin: 26px auto; border-radius: 50%; background: conic-gradient(var(--green) var(--score), #e2ddd2 0); position: relative; }
+.score-ring::after { content: ""; position: absolute; inset: 13px; border-radius: 50%; background: var(--paper); }
+.score-ring span { z-index: 1; font: 800 30px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.results h2 { margin: 15px 0 8px; font-size: 32px; }
+.results h2:focus { outline: none; }
+.results > p:not(.eyebrow) { max-width: 540px; margin: 0 auto; color: var(--muted); line-height: 1.6; }
+.section-results { display: grid; gap: 8px; max-width: 460px; margin: 24px auto 0; padding: 0; list-style: none; text-align: left; }
+.section-results li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: white; font-size: 13px; }
+.result-actions { display: flex; justify-content: center; gap: 10px; margin: 28px 0 0; }
+.site-footer { display: flex; justify-content: space-between; gap: 20px; padding: 22px clamp(18px, 4vw, 58px); border-top: 1px solid var(--line); color: var(--muted); font: 700 10px ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; letter-spacing: .06em; }
+
+@media (max-width: 860px) {
+  .question-top { grid-template-columns: 1fr; }
+  .mini-visual { width: min(100%, 360px); }
+  .answers { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .site-header { grid-template-columns: auto 1fr; }
+  .header-note { grid-column: 2; }
+  .quiz-layout { grid-template-columns: 1fr; margin-top: 18px; }
+  .lesson-rail { min-height: auto; padding: 20px; }
+  .lesson-rail h2 { margin: 8px 0 15px; font-size: 23px; }
+  .lesson-rail ol { grid-template-columns: repeat(3, 1fr); }
+  .lesson-rail li { grid-template-columns: 1fr; align-content: start; font-size: 11px; }
+  .rail-note { display: none; }
+  .progress-row { grid-template-columns: auto auto; }
+  .progress-track { grid-column: 1 / -1; grid-row: 2; }
+  .question-top { gap: 10px; }
+  .mini-visual { order: -1; }
+  .site-footer { flex-direction: column; gap: 8px; }
+}
+@media (max-width: 480px) {
+  .site-header h1 { font-size: 18px; }
+  .header-note { font-size: 10px; }
+  .quiz-layout { width: calc(100% - 18px); }
+  .question-card { padding: 18px 15px; }
+  .question-card h2 { font-size: 24px; }
+  .answers button { padding: 10px; font-size: 13px; }
+  .card-actions, .result-actions { flex-direction: column-reverse; }
+  .results { margin: 24px auto; padding: 30px 20px; }
+}
+@media (orientation: landscape) and (max-height: 560px) and (max-width: 1024px) {
+  .site-header { min-height: 52px; padding: 6px 16px; }
+  .brand-mark { width: 34px; height: 39px; font-size: 20px; }
+  .site-header .eyebrow { display: none; }
+  .site-header h1 { font-size: 17px; }
+  .quiz-layout { width: min(980px, calc(100% - 18px)); grid-template-columns: 190px minmax(0, 1fr); gap: 14px; margin: 12px auto; }
+  .lesson-rail { min-height: 0; padding: 18px 15px; }
+  .lesson-rail h2 { margin: 7px 0 14px; font-size: 20px; }
+  .lesson-rail ol { display: grid; grid-template-columns: 1fr; gap: 5px; }
+  .lesson-rail li { grid-template-columns: 22px 1fr; padding: 8px; font-size: 10px; }
+  .rail-note { display: none; }
+  .question-card { padding: 18px; }
+  .question-top { grid-template-columns: minmax(0, 1fr) 170px; gap: 14px; }
+  .question-card h2 { margin: 10px 0 14px; font-size: 22px; }
+  .answers { grid-template-columns: 1fr 1fr; gap: 7px; }
+  .answers button { min-height: 50px; padding: 8px 10px; font-size: 12px; }
+  .answers button > .answer-mark { width: 26px; height: 26px; }
+  .feedback { margin-top: 10px; padding: 10px; }
+  .feedback p { margin-top: 2px; }
+  .card-actions { margin-top: 10px; padding-top: 10px; }
+  .site-footer { padding: 12px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; transition: none !important; }
+}
+
+
+/* Keep mathematical indices inside one answer-grid item. */
+.answer-text { min-width: 0; line-height: 1.4; }
+.question-card sub, .question-card sup { font-size: .7em; line-height: 0; position: relative; vertical-align: baseline; }
+.question-card sub { bottom: -.25em; }
+.question-card sup { top: -.45em; }
+
+
+.slide-references { margin-top: 12px; color: var(--ink); font-size: 12px; line-height: 1.5; }
+.slide-references summary { cursor: pointer; font-weight: 700; }
+.slide-references ul { margin: 7px 0 0; padding-left: 20px; }
+.noscript-note { margin: 30px; line-height: 1.5; }
+summary:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+
+</style>
+  </head>
+  <body>
+    <div class="quiz-shell">
+      <header class="site-header">
+        <div class="brand-mark" aria-hidden="true">L</div>
+        <div>
+          <p class="eyebrow">Machine learning · formative quiz</p>
+          <h1>Linear classifiers concept check</h1>
+        </div>
+        <span class="header-note">Chapter 8 · Linear classifiers</span>
+      </header>
+
+      <main id="quiz-root"></main>
+      <noscript><p class="noscript-note">Enable JavaScript to answer the quiz. You can also read the <a href="./QUESTION_GUIDE.md">question guide and answer explanations</a>.</p></noscript>
+
+      <footer class="site-footer">
+        <span>Linear boundaries · Logistic regression · Softmax</span>
+        <span>Made by Alexandre Bernardino with Codex</span>
+      </footer>
+    </div>
+  <script>
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, character => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[character]);
+}
+
+// Small, dependency-free renderer for the index notation used in this quiz.
+// Escape both ordinary text and index contents; never accept HTML from the bank.
+function formatMathText(value) {
+  const token = /([\p{L}\p{N}∑∏∫)][\p{M}′″]*)((?:[_^](?:\{[^{}]+\}|[\p{L}\p{N}\p{M}]+))+)/gu;
+  const text = String(value);
+  let result = "";
+  let cursor = 0;
+  for (const match of text.matchAll(token)) {
+    result += escapeHtml(text.slice(cursor, match.index) + match[1]);
+    for (const index of match[2].matchAll(/([_^])(?:\{([^{}]+)\}|([\p{L}\p{N}\p{M}]+))/gu)) {
+      const tag = index[1] === "_" ? "sub" : "sup";
+      result += `<${tag}>${formatMathText(index[2] ?? index[3])}</${tag}>`;
+    }
+    cursor = match.index + match[0].length;
+  }
+  return result + escapeHtml(text.slice(cursor));
+}
+
+
+
+// Chapter 8: Linear classifiers. Four choices, one best answer per question.
+// answer is zero-based (0=A, 1=B, 2=C, 3=D). All logarithms are natural.
+const questions = [
+  {
+    section: 'Linear boundaries & LDA',
+    category: 'Concept',
+    prompt: 'Two classes use affine scores f_0(x) = β_{00} + β_0^T x and f_1(x) = β_{01} + β_1^T x, with β_0 ≠ β_1. What is the set where their scores are equal?',
+    options: [
+      'An ellipsoid centred at the mean of the observations.',
+      'A hyperplane that must pass through the origin.',
+      'A hyperplane with normal vector β_1 − β_0; the intercepts determine its offset.',
+      'A sigmoid curve because the task is classification.'
+    ],
+    answer: 2,
+    explanation: 'Equating the scores gives (β_1 − β_0)^T x = β_{00} − β_{01}. This is a hyperplane because the normal is nonzero. An intercept allows it to move away from the origin. With more than two affine scores, the full decision boundary consists of pieces of pairwise equality hyperplanes.',
+    activity: 'Use f_0 = −x_1 + 0.6x_2 + 0.4 and f_1 = x_1 − 0.6x_2 − 0.4. Answer: the boundary is x_1 − 0.6x_2 = 0.4; at (0,0), class 0 has the larger score.',
+    slides: ['Linear methods for classification', 'Affine scores and the decision boundary']
+  },
+  {
+    section: 'Linear boundaries & LDA',
+    category: 'Concept',
+    prompt: 'Which statement correctly distinguishes LDA from logistic regression?',
+    options: [
+      'LDA models Gaussian class-conditional densities and class priors; logistic regression models the binary posterior probability directly.',
+      'Both require the input features in each class to have a Gaussian distribution.',
+      'LDA models only the posterior; logistic regression must estimate a separate covariance matrix for each class.',
+      'LDA is discriminative and logistic regression is generative.'
+    ],
+    answer: 0,
+    explanation: 'LDA is a generative model: it describes p(x | y=k), using a shared covariance, and P(y=k), then applies Bayes’ rule. Logistic regression is discriminative: it specifies P(y=1 | x) without requiring Gaussian class-conditionals. The two methods can produce similar posterior forms but need not produce identical fitted parameters on a finite dataset.',
+    activity: 'Does a logistic classifier become invalid solely because the input distribution is non-Gaussian? Answer: no. Its modeling assumption concerns the conditional class probability, not a Gaussian density for x.',
+    slides: ['Linear classifiers: Outline', 'Linear discriminant analysis', 'Logistic regression']
+  },
+  {
+    section: 'Linear boundaries & LDA',
+    category: 'Concept',
+    prompt: 'Why do Gaussian class-conditionals with a common positive-definite covariance matrix Σ lead to affine LDA discriminant scores?',
+    options: [
+      'A Gaussian density is itself an affine function of x.',
+      'The covariance must be diagonal, making all squared terms zero.',
+      'All class priors must be equal, so all terms involving x disappear.',
+      'After taking logarithms, the term −½x^{T} Σ^{−1} x is common to all classes and cancels in score comparisons.'
+    ],
+    answer: 3,
+    explanation: 'Expanding the Gaussian log-density leaves a common quadratic term plus μ_k^{T} Σ^{−1} x − ½μ_k^{T} Σ^{−1} μ_k + log P_k. Removing terms common to every class preserves the winning class. The remaining score is affine in x. The shared covariance may contain correlations, and priors need not be equal.',
+    activity: 'For distinct class means, what can change if a shared covariance has nonzero off-diagonal entries? Answer: the boundary can rotate, but remains a hyperplane.',
+    slides: ['Linear discriminant analysis', 'Gaussian geometry: when is the boundary linear?']
+  },
+  {
+    section: 'Linear boundaries & LDA',
+    category: 'Calculation',
+    prompt: 'In one-dimensional LDA, μ_0 = −1, μ_1 = 1 and the common variance is 1. The priors are P_0 = 3/4 and P_1 = 1/4. With equal error costs, when should the classifier choose class 1 (away from a tie)?',
+    options: [
+      'Whenever x > 0; priors do not affect an LDA boundary.',
+      'Whenever x > ½ log 3 ≈ 0.549.',
+      'Whenever x > −½ log 3 ≈ −0.549.',
+      'Whenever x < ½ log 3 ≈ 0.549.'
+    ],
+    answer: 1,
+    explanation: 'The score difference is δ_1(x) − δ_0(x) = 2x + log(P_1/P_0) = 2x − log 3. Class 1 wins when this is positive. Increasing the prior of class 0 expands its decision region: class 1 needs stronger feature evidence to overcome its lower prior.',
+    activity: 'Classify x = 0.4. Answer: class 0, because 0.4 < 0.549. With equal priors the boundary would be 0 and the same observation would be assigned to class 1.',
+    slides: ['Linear discriminant analysis']
+  },
+  {
+    section: 'Linear boundaries & LDA',
+    category: 'Concept',
+    prompt: 'If Gaussian classes are allowed different positive-definite covariance matrices, what generally happens to the pairwise decision boundary?',
+    options: [
+      'The quadratic terms generally no longer cancel, giving a quadratic decision boundary (QDA).',
+      'It remains a hyperplane for every choice of means and covariances.',
+      'It must be a circle, regardless of the covariance matrices.',
+      'It becomes impossible to compute posterior class probabilities.'
+    ],
+    answer: 0,
+    explanation: 'With class-specific covariance matrices, both the quadratic forms and the log-determinant terms can differ between classes. Their score difference is generally quadratic in x. Particular parameter choices can produce special or degenerate boundaries, so “always a curved ellipse” would be too strong.',
+    activity: 'If the covariance matrices become equal again, does the QDA comparison reduce to LDA? Answer: yes; the class-dependent quadratic terms cancel.',
+    slides: ['Gaussian geometry: when is the boundary linear?', 'Linear discriminant analysis']
+  },
+  {
+    section: 'Linear boundaries & LDA',
+    category: 'Calculation',
+    prompt: 'A training set has n = 20 observations, K = 3 nonempty classes and p = 18 features. Which statement about the pooled within-class covariance Σ̂ is correct?',
+    options: [
+      'It must be invertible because n > p.',
+      'It has rank exactly 18, so no regularization is needed.',
+      'Its rank is at most n − K = 17, so it is singular; Σ̂ + λI is positive definite for λ > 0.',
+      'Subtracting λI, with any λ > 0, always makes it positive definite.'
+    ],
+    answer: 2,
+    explanation: 'Subtracting each class mean leaves at most n − K independent within-class residual directions. Thus rank(Σ̂) ≤ min(p,n − K) = 17 < 18. Since a covariance matrix is positive semidefinite, adding λI shifts every eigenvalue by a positive amount and makes the result invertible.',
+    activity: 'Would p = 10 guarantee invertibility for the same n and K? Answer: no. Redundant or constant features can still make the covariance singular.',
+    slides: ['Linear discriminant analysis', 'Regularized covariance estimation in LDA']
+  },
+  {
+    section: 'Indicators & logistic regression',
+    category: 'Calculation',
+    prompt: 'Eight observations have identical inputs. Their class-1 indicators contain three ones and five zeros. What constant prediction minimizes the sum of squared errors?',
+    options: [
+      '0, because class 0 is the majority.',
+      '3/8.',
+      '1/2, because there are two classes.',
+      '5/8.'
+    ],
+    answer: 1,
+    explanation: 'The objective is 5p² + 3(1−p)². Setting its derivative to zero gives 16p − 6 = 0, hence p = 3/8. The optimal squared-error prediction is the sample mean of the indicators, not the most frequent hard label. At population level, the unrestricted conditional squared-error minimizer is E[Y | x] = P(Y=1 | x).',
+    activity: 'Using a threshold of 0.5, what hard class is predicted? Answer: class 0. Distinguish the fitted score 3/8 from the predicted class label 0.',
+    slides: ['One hot encoding', 'Training indicator variable with constant input']
+  },
+  {
+    section: 'Indicators & logistic regression',
+    category: 'Concept',
+    prompt: 'Fit both binary class indicators by unregularized ordinary least squares, using the same full-column-rank design matrix with an intercept. Which statement holds for the two fitted functions?',
+    options: [
+      'Both fitted scores must lie between 0 and 1 at every input.',
+      'The fitted functions are equal because both labels are binary.',
+      'Their sum must be zero because the centered indicators are opposites.',
+      'They satisfy f_1(x) = 1 − f_0(x), although individual scores can be outside [0,1].'
+    ],
+    answer: 3,
+    explanation: 'The target vectors satisfy y_1 = 1 − y_0. Least-squares fitting is linear in the target, and the intercept fits the constant-one vector exactly. Full column rank gives unique coefficient vectors, so the complementary relationship holds for every input. The sum-to-one property does not impose nonnegativity or upper bounds on each score.',
+    activity: 'If f_0(x) = 1.2, what are f_1(x) and the predicted class? Answer: f_1(x) = −0.2, and class 0 wins. These are valid discriminant scores but not valid probabilities.',
+    slides: ['Linear regression of indicator variables: Binary case', 'Least-squares regression of class indicators']
+  },
+  {
+    section: 'Indicators & logistic regression',
+    category: 'Concept',
+    prompt: 'A binary classifier uses the score s(x) = β_0 + β_1 x + β_2 x² and predicts class 1 when s(x) > 0. How should this model be described?',
+    options: [
+      'It is linear in its coefficients and in the transformed features (1,x,x²), but can have nonlinear decision regions in the original input.',
+      'It is necessarily nonlinear in its coefficients because x is squared.',
+      'It can have only one decision-boundary point on the real line.',
+      'It becomes a linear function of the original x whenever a sigmoid is applied to the score.'
+    ],
+    answer: 0,
+    explanation: 'The unknown coefficients enter as a linear combination of fixed features. This differs from being affine in the original input x. For example, s(x) = x² − 1 is positive outside the interval [−1,1] and negative inside it; its two boundary points are x = −1 and x = 1.',
+    activity: 'Would replacing the threshold on s by a threshold of 0.5 on g(s) change those boundary points? Answer: no, because g is strictly increasing and g(0) = 0.5.',
+    slides: ['Linear classifiers: Outline', 'Regression with more flexible models', 'Logistic regression with more flexible models']
+  },
+  {
+    section: 'Indicators & logistic regression',
+    category: 'Calculation',
+    prompt: 'A logistic model uses P(y=1 | x) = g(−2+x), with g(s) = 1/(1+exp(−s)). What are the probability at x = 3 and the decision boundary for a probability threshold of 0.5?',
+    options: [
+      'Probability ≈ 0.269; boundary x = 2.',
+      'Probability = 1; boundary x = 0.5.',
+      'Probability ≈ 0.731; boundary x = 2.',
+      'Probability ≈ 0.731; boundary x = −2.'
+    ],
+    answer: 2,
+    explanation: 'At x = 3, the score is −2 + 3 = 1, so the probability is g(1) ≈ 0.731. The threshold 0.5 corresponds to score zero, giving x = 2. The probability is nonlinear in x, while the decision boundary is determined by the affine score.',
+    activity: 'Find the probability at x = 1. Answer: g(−1) ≈ 0.269, which equals 1 − g(1). The model predicts class 0 there.',
+    slides: ['Logistic regression', 'Logistic regression on overlapping classes']
+  },
+  {
+    section: 'Indicators & logistic regression',
+    category: 'Concept',
+    prompt: 'A single neuron computes an affine weighted sum of the input features and then applies a sigmoid. What is its relationship to binary logistic regression?',
+    options: [
+      'Its sigmoid output is already a hard class label, so no threshold is needed.',
+      'It is equivalent only if the input features are Gaussian.',
+      'It always has the same training objective, regardless of which loss is used.',
+      'It has the same probability map; training with binary cross-entropy and matching regularization gives the same objective.'
+    ],
+    answer: 3,
+    explanation: 'Both compute g(β_0 + ∑_j β_j x_j). The output represents a class probability; a separate threshold produces a hard label. Matching the probability map alone does not specify the loss. Binary cross-entropy matches logistic negative log-likelihood. A classical hard-threshold perceptron is a different model/training combination.',
+    activity: 'Could the sigmoid neuron instead be trained using squared error? Answer: yes, but this generally gives a different objective from logistic maximum likelihood, and the loss need not be convex in the coefficients.',
+    slides: ['Logistic regression as a sigmoid neuron', 'Logistic regression - gradient ascent']
+  },
+  {
+    section: 'Indicators & logistic regression',
+    category: 'Calculation',
+    prompt: 'For one observation with y = 1 and predicted probability p = P(y=1 | x) = 0.1, what is the binary cross-entropy loss, using natural logarithms?',
+    options: [
+      '−log(0.9) ≈ 0.105.',
+      '−log(0.1) ≈ 2.303.',
+      '(1−0.1)² = 0.81.',
+      'log(0.1) ≈ −2.303.'
+    ],
+    answer: 1,
+    explanation: 'Binary cross-entropy is −y log p − (1−y)log(1−p). When y = 1, only −log p remains. Assigning a low probability to the true label incurs a large positive loss. As p approaches zero, this loss grows without bound. The summed loss is the negative conditional log-likelihood for independent observations.',
+    activity: 'Keep p = 0.1 but change the true label to y = 0. Answer: the loss becomes −log(0.9) ≈ 0.105; the same prediction is now confidently correct.',
+    slides: ['Binary cross-entropy for one training example', 'Logistic regression: learning']
+  },
+  {
+    section: 'Learning & softmax',
+    category: 'Calculation',
+    prompt: 'For one logistic-regression observation, the augmented input is x = (1,2)^T, y = 1 and the current predicted probability is 0.25. With learning rate γ = 0.1, what increment Δβ does one unregularized log-likelihood gradient-ascent step add?',
+    options: [
+      'Δβ = (0.075, 0.150)^T.',
+      'Δβ = (−0.075, −0.150)^T.',
+      'Δβ = (0.025, 0.050)^T.',
+      'Δβ = (0.750, 1.500)^T.'
+    ],
+    answer: 0,
+    explanation: 'For one observation, ∇ℓ = (y−p)x = 0.75(1,2)^T = (0.75,1.5)^T. Gradient ascent adds γ∇ℓ, giving (0.075,0.15)^T. The first component updates the intercept because the first augmented feature is 1. Gradient descent on negative log-likelihood produces the same increment.',
+    activity: 'Using the same current model and input but y = 0, find the increment. Answer: 0.1(0−0.25)(1,2)^T = (−0.025,−0.05)^T.',
+    slides: ['Logistic regression - gradient ascent', 'Log-likelihood gradient']
+  },
+  {
+    section: 'Learning & softmax',
+    category: 'Concept',
+    prompt: 'For standard binary logistic regression with fixed input features, which statement about the unregularized objective is correct?',
+    options: [
+      'The log-likelihood is convex, so gradient ascent always converges for any positive learning rate.',
+      'The negative log-likelihood is concave, and every dataset has a unique finite minimizer.',
+      'The log-likelihood is concave and its negative is convex; this alone does not guarantee a finite or unique optimum.',
+      'The sigmoid makes the negative log-likelihood nonconvex in the coefficients for every dataset.'
+    ],
+    answer: 2,
+    explanation: 'The log-likelihood Hessian is −X^T W X, where W has nonnegative entries p_i(1−p_i) on its diagonal. It is negative semidefinite, so ℓ is concave and −ℓ is convex. Rank deficiencies can prevent uniqueness, and separation can prevent a finite optimum. A suitable learning-rate rule is still needed for iterative optimization.',
+    activity: 'Does concavity rule out spurious local maxima while also guaranteeing that a maximum is attained? Answer: it rules out nonglobal local maxima, but does not guarantee attainment on an unbounded parameter space.',
+    slides: ['Logistic regression - gradient ascent', 'Linearly separable logistic regression']
+  },
+  {
+    section: 'Learning & softmax',
+    category: 'Concept',
+    prompt: 'Fit P(y=1 | x) = g(cx), c > 0, with no intercept, to (−1,0) and (1,1). As c increases, which statement describes the unregularized fit?',
+    options: [
+      'The classification boundary moves farther from zero until both observations become correct.',
+      'Training error is already zero for every c > 0, while the log-likelihood increases toward 0 without attaining it at any finite c.',
+      'The log-likelihood reaches its maximum as soon as the training classification error becomes zero.',
+      'The log-likelihood grows without bound toward positive infinity.'
+    ],
+    answer: 1,
+    explanation: 'The boundary stays at x = 0 and both labels are correctly classified for every positive c. Independence gives L(c) = g(c)² and ℓ(c) = −2 log(1+exp(−c)). For every finite c, ℓ(c) < 0, and ℓ′(c) = 2/(1+exp(c)) > 0. Thus 0 is an unattained supremum, not a finite maximum.',
+    activity: 'Add λc²/2, λ > 0, to the negative log-likelihood. Is the minimizer finite? Answer: yes. The penalty makes the objective grow as c → ∞; its derivative at 0 is −1 and its second derivative is strictly positive, giving one finite positive minimizer.',
+    slides: ['Linearly separable logistic regression', 'Linearly separable logistic regression: solution', 'Exercise: logistic regression on separable data']
+  },
+  {
+    section: 'Learning & softmax',
+    category: 'Calculation',
+    prompt: 'Three mutually exclusive classes have softmax scores (s_0,s_1,s_2) = (0,log 2,log 3). What are their predicted probabilities?',
+    options: [
+      '(1/2, 2/3, 3/4).',
+      '(0, log 2/(log 2+log 3), log 3/(log 2+log 3)).',
+      '(0, 0, 1).',
+      '(1/6, 1/3, 1/2).'
+    ],
+    answer: 3,
+    explanation: 'Exponentiating gives (1,2,3), and the shared denominator is 1+2+3 = 6. The probabilities are therefore (1/6,2/6,3/6), which sum to one. Applying an independent sigmoid to each score would not give this multiclass normalization. The largest probability and largest score both select class 2.',
+    activity: 'For just two scores s_0 and s_1, express the probability of class 1 using a sigmoid. Answer: p_1 = g(s_1−s_0); it depends on the score difference.',
+    slides: ['Softmax', 'Softmax: one shared normalization across classes']
+  },
+  {
+    section: 'Learning & softmax',
+    category: 'Calculation',
+    prompt: 'For one softmax example, the true one-hot label is y = (0,1,0) and the predicted probabilities are p = (0.2,0.5,0.3). What is the gradient of the log-likelihood with respect to the three scores?',
+    options: [
+      'y − p = (−0.2, 0.5, −0.3).',
+      'p − y = (0.2, −0.5, 0.3).',
+      '(0, 2, 0).',
+      'p = (0.2, 0.5, 0.3).'
+    ],
+    answer: 0,
+    explanation: 'Combining the softmax derivatives with ℓ = ∑_k y_k log p_k gives ∂ℓ/∂s_j = y_j − p_j. Thus ascent raises the true-class score and lowers the other scores. The negative log-likelihood gradient has the opposite sign. The vector (0,2,0) is instead ∂ℓ/∂p, before applying the softmax chain rule.',
+    activity: 'What is the cross-entropy loss, and what is the sum of the score-gradient components? Answer: loss = −log 0.5 = log 2, and the components sum to 0.',
+    slides: ['Softmax: learning', 'Softmax: gradient', 'Softmax: update']
+  },
+  {
+    section: 'Learning & softmax',
+    category: 'Concept',
+    prompt: 'A softmax model uses s_k = x^{T} β_k. Add the same vector a to every class coefficient vector: β′_k = β_k + a. What changes?',
+    options: [
+      'Every class probability increases by the same positive amount.',
+      'The probabilities are unchanged; a reference-class or sum-to-zero constraint can remove this common-shift redundancy.',
+      'The predicted class is unchanged, but the probabilities generally change.',
+      'The probabilities become equal across classes.'
+    ],
+    answer: 1,
+    explanation: 'Every score gains x^T a, so every exponential gains the common factor exp(x^T a). This factor cancels between numerator and denominator. Different coefficient matrices therefore represent the same probability model. Fixing one class coefficient vector to zero, or imposing a sum-to-zero constraint, removes this redundancy; other issues such as separation or deficient feature rank can still remain.',
+    activity: 'Would multiplying all scores by 2 have the same effect? Answer: generally no. It preserves their ordering but changes the probabilities, typically making them more concentrated on the largest scores.',
+    slides: ['Softmax identifiability', 'Softmax identifiability: possible fixes']
+  }
+];
+
+
+const root = document.querySelector("#quiz-root");
+const sections = [...new Set(questions.map(question => question.section))];
+let answers = Array(questions.length).fill(null);
+let current = 0;
+let finished = false;
+
+function score() {
+  return answers.reduce((total, choice, index) => total + Number(choice === questions[index].answer), 0);
+}
+
+function visual(question) {
+  const section = question.section;
+  const shell = (label, content) => `<svg class="mini-visual" viewBox="0 0 240 170" role="img" aria-label="${label}"><rect width="240" height="170" fill="#f4f1e8"/>${content}</svg>`;
+  if (section === "Linear boundaries & LDA") {
+    return shell("Illustrative observations from two classes in a two-dimensional feature space", `
+      <text x="120" y="20" text-anchor="middle">Observations in feature space</text>
+      <path d="M32 32V137H218" fill="none" stroke="#697183"/>
+      <circle cx="60" cy="61" r="5" fill="#315fc7"/><circle cx="78" cy="90" r="5" fill="#315fc7"/>
+      <circle cx="98" cy="57" r="5" fill="#315fc7"/><circle cx="114" cy="83" r="5" fill="#315fc7"/>
+      <circle cx="71" cy="114" r="5" fill="#315fc7"/><circle cx="136" cy="67" r="5" fill="#315fc7"/>
+      <path d="M142 110l6-10 6 10zM170 74l6-10 6 10zM191 117l6-10 6 10zM157 92l6-10 6 10zM121 125l6-10 6 10z" fill="#bc7639"/>
+      <text x="199" y="153">x₁</text><text x="16" y="43">x₂</text>
+      <text x="120" y="164" text-anchor="middle" class="visual-caption">Features and class labels</text>`);
+  }
+  if (section === "Indicators & logistic regression") {
+    return shell("Illustrative training table with two features and a class label for each observation", `
+      <text x="120" y="20" text-anchor="middle">A labelled training set</text>
+      <rect x="30" y="34" width="180" height="112" rx="6" fill="#fffdf8" stroke="#c5bdad"/>
+      <path d="M30 61H210M30 89H210M30 117H210M90 34V146M150 34V146" fill="none" stroke="#d7d0c2"/>
+      <text x="60" y="52" text-anchor="middle">x₁</text><text x="120" y="52" text-anchor="middle">x₂</text><text x="180" y="52" text-anchor="middle">class</text>
+      <path d="M48 76H72M108 76H132M48 104H72M108 104H132M48 132H72M108 132H132" stroke="#a6adbc" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="180" cy="76" r="5" fill="#315fc7"/><path d="M174 109l6-10 6 10z" fill="#bc7639"/><circle cx="180" cy="132" r="5" fill="#315fc7"/>
+      <text x="120" y="164" text-anchor="middle" class="visual-caption">Each row is one observation</text>`);
+  }
+  return shell("General machine learning workflow from training data through a model to predictions", `
+    <text x="120" y="21" text-anchor="middle">Learning and prediction</text>
+    <rect x="55" y="34" width="130" height="28" rx="5" fill="#dce5f8" stroke="#8ca6df"/><text x="120" y="52" text-anchor="middle">Training data</text>
+    <path d="M120 62V78M116 73L120 79L124 73" fill="none" stroke="#697183"/>
+    <rect x="55" y="81" width="130" height="28" rx="5" fill="#e9def6" stroke="#b8a0d0"/><text x="120" y="99" text-anchor="middle">Fitted model</text>
+    <path d="M120 109V125M116 120L120 126L124 120" fill="none" stroke="#697183"/>
+    <rect x="55" y="128" width="130" height="28" rx="5" fill="#e5f3ed" stroke="#61aa92"/><text x="120" y="146" text-anchor="middle">Predictions</text>`);
+}
+
+function renderQuestion() {
+  const q = questions[current];
+  const choice = answers[current];
+  const answered = choice !== null;
+  root.innerHTML = `<div class="quiz-layout">
+    <aside class="lesson-rail" aria-label="Learning path">
+      <p class="eyebrow">Learning path</p>
+      <h2>From linear scores to class predictions</h2>
+      <ol>${sections.map((section, index) => `<li class="${q.section === section ? "active" : ""}" ${q.section === section ? 'aria-current="step"' : ""}><span>0${index + 1}</span>${escapeHtml(section)}</li>`).join("")}</ol>
+      <div class="rail-note"><p>Answer first, then read the explanation. Your responses stay in this browser tab; nothing is submitted.</p></div>
+    </aside>
+    <section class="question-stage" aria-label="Quiz question">
+      <p class="setup-note"><strong>Chapter scope:</strong> Linear boundaries, LDA, indicator regression, logistic regression, learning and softmax. Use the assumptions stated in each question. Choose one best answer, then check the explanation.</p>
+      <div class="progress-row"><span>Question ${current + 1} of ${questions.length}</span><div class="progress-track" role="progressbar" aria-label="Quiz progress" aria-valuemin="0" aria-valuemax="${questions.length}" aria-valuenow="${current + 1}"><div style="width:${((current + 1) / questions.length) * 100}%"></div></div><strong>${score()} points</strong></div>
+      <article class="question-card">
+        <div class="question-top"><div><p class="question-label">${escapeHtml(q.category)}</p><h2 id="question-title" tabindex="-1">${formatMathText(q.prompt)}</h2></div>${visual(q)}</div>
+        <div class="answers" role="group" aria-label="Answer choices">${q.options.map((option, index) => {
+          const status = answered ? (index === q.answer ? "answer-correct" : index === choice ? "answer-wrong" : "") : "";
+          const mark = answered && index === q.answer ? "✓" : answered && index === choice ? "×" : String.fromCharCode(65 + index);
+          return `<button type="button" data-choice="${index}" ${answered ? "disabled" : ""} aria-pressed="${choice === index}" class="${status}"><span class="answer-mark" aria-hidden="true">${mark}</span><span class="answer-text">${formatMathText(option)}</span></button>`;
+        }).join("")}</div>
+        ${answered ? `<div class="feedback ${choice === q.answer ? "correct" : "incorrect"}" role="status" tabindex="-1"><strong>${choice === q.answer ? "Correct." : "Not quite."}</strong><p>${formatMathText(q.explanation)}</p><div class="try-it"><b>Check it:</b> ${formatMathText(q.activity)}</div><details class="slide-references"><summary>Revisit the chapter</summary><ul>${q.slides.map(title => `<li>${escapeHtml(title.replaceAll("``", "“").replaceAll("''", "”"))}</li>`).join("")}</ul></details></div>` : ""}
+        <div class="card-actions"><button type="button" class="secondary" data-action="previous" ${current === 0 ? "disabled" : ""}>← Previous</button><button type="button" class="primary" data-action="next" ${!answered ? "disabled" : ""}>${current === questions.length - 1 ? "See results" : "Next question →"}</button></div>
+      </article>
+    </section>
+  </div>`;
+}
+
+function renderResults() {
+  const total = score();
+  const summary = sections.map(section => {
+    const indices = questions.map((question, index) => question.section === section ? index : -1).filter(index => index >= 0);
+    const correct = indices.filter(index => answers[index] === questions[index].answer).length;
+    return `<li><span>${escapeHtml(section)}</span><strong>${correct} / ${indices.length}</strong></li>`;
+  }).join("");
+  root.innerHTML = `<section class="results" aria-labelledby="results-title">
+    <p class="eyebrow">Quiz complete</p>
+    <div class="score-ring" style="--score:${(total / questions.length) * 360}deg"><span>${total}/${questions.length}</span></div>
+    <h2 id="results-title" tabindex="-1">${total} out of ${questions.length} correct</h2>
+    <p>Review the explanations to connect decision geometry, class scores, probability models and the objectives used to learn them.</p>
+    <ul class="section-results">${summary}</ul>
+    <div class="result-actions"><button type="button" class="secondary" data-action="review">Review answers</button><button type="button" class="primary" data-action="restart">Restart quiz</button></div>
+  </section>`;
+}
+
+function render(focusTarget) {
+  if (finished) renderResults(); else renderQuestion();
+  if (focusTarget) root.querySelector(focusTarget)?.focus();
+}
+
+root.addEventListener("click", event => {
+  const choiceButton = event.target.closest("[data-choice]");
+  if (choiceButton && answers[current] === null) {
+    answers[current] = Number(choiceButton.dataset.choice);
+    render(".feedback");
+    return;
+  }
+  const action = event.target.closest("[data-action]")?.dataset.action;
+  if (action === "previous" && current > 0) {
+    current -= 1;
+    render("#question-title");
+  } else if (action === "next" && answers[current] !== null) {
+    if (current === questions.length - 1) {
+      finished = true;
+      render("#results-title");
+    } else {
+      current += 1;
+      render("#question-title");
+    }
+  } else if (action === "review") {
+    finished = false;
+    current = 0;
+    render("#question-title");
+  } else if (action === "restart") {
+    answers = Array(questions.length).fill(null);
+    current = 0;
+    finished = false;
+    render("#question-title");
+  }
+});
+
+render();
+
+
+
+
+</script>
+  </body>
+</html>
+
+
+
